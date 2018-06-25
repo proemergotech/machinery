@@ -6,9 +6,9 @@ import (
 	"os"
 	"sync"
 
-	"github.com/RichardKnop/machinery/v1/brokers/iface"
-	"github.com/RichardKnop/machinery/v1/common"
-	"github.com/RichardKnop/machinery/v1/config"
+	"github.com/proemergotech/machinery/v1/brokers/iface"
+	"github.com/proemergotech/machinery/v1/common"
+	"github.com/proemergotech/machinery/v1/config"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sqs/sqsiface"

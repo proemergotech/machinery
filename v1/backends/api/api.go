@@ -1,52 +1,38 @@
-package memcache
+package api
 
 import (
 	"bytes"
 	"encoding/json"
-	"time"
+
+	"net/http"
 
 	"github.com/proemergotech/machinery/v1/backends/iface"
 	"github.com/proemergotech/machinery/v1/common"
 	"github.com/proemergotech/machinery/v1/config"
-	"github.com/proemergotech/machinery/v1/log"
 	"github.com/proemergotech/machinery/v1/tasks"
-
-	gomemcache "github.com/bradfitz/gomemcache/memcache"
+	"gopkg.in/h2non/gentleman.v2"
 )
 
-// Backend represents a Memcache result backend
+// Backend represents an API result backend
 type Backend struct {
 	common.Backend
-	servers []string
-	client  *gomemcache.Client
+	host string
 }
 
+var HTTPClient *gentleman.Client
+
 // New creates Backend instance
-func New(cnf *config.Config, servers []string) iface.Backend {
+func New(cnf *config.Config, host string) iface.Backend {
 	return &Backend{
 		Backend: common.NewBackend(cnf),
-		servers: servers,
+		host:    host,
 	}
 }
 
 // InitGroup creates and saves a group meta data object
 func (b *Backend) InitGroup(groupUUID string, taskUUIDs []string) error {
-	groupMeta := &tasks.GroupMeta{
-		GroupUUID: groupUUID,
-		TaskUUIDs: taskUUIDs,
-		CreatedAt: time.Now().UTC(),
-	}
-
-	encoded, err := json.Marshal(&groupMeta)
-	if err != nil {
-		return err
-	}
-
-	return b.getClient().Set(&gomemcache.Item{
-		Key:        groupUUID,
-		Value:      encoded,
-		Expiration: b.getExpirationTimestamp(),
-	})
+	// we must implement this function outside of machinery to be able to set workflow ids.
+	return nil
 }
 
 // GroupCompleted returns true if all tasks in a group finished
@@ -96,30 +82,16 @@ func (b *Backend) TriggerChord(groupUUID string) (bool, error) {
 		return false, nil
 	}
 
-	// If group meta is locked, wait until it's unlocked
-	for groupMeta.Lock {
-		groupMeta, _ = b.getGroupMeta(groupUUID)
-		log.WARNING.Print("Group meta locked, waiting")
-		time.Sleep(time.Millisecond * 5)
-	}
+	data := &map[string]bool{"chord_triggered": true}
 
-	// Acquire lock
-	if err = b.lockGroupMeta(groupMeta); err != nil {
-		return false, err
-	}
-	defer b.unlockGroupMeta(groupMeta)
-
-	// Update the group meta data
-	groupMeta.ChordTriggered = true
-	encoded, err := json.Marshal(&groupMeta)
+	_, err = HTTPClient.
+		Request().
+		Method(http.MethodPatch).
+		Path("api/v1/groups/:group_id").
+		Param("group_id", groupUUID).
+		JSON(data).
+		Do()
 	if err != nil {
-		return false, err
-	}
-	if err = b.getClient().Replace(&gomemcache.Item{
-		Key:        groupUUID,
-		Value:      encoded,
-		Expiration: b.getExpirationTimestamp(),
-	}); err != nil {
 		return false, err
 	}
 
@@ -164,84 +136,54 @@ func (b *Backend) SetStateFailure(signature *tasks.Signature, err string) error 
 
 // GetState returns the latest task state
 func (b *Backend) GetState(taskUUID string) (*tasks.TaskState, error) {
-	item, err := b.getClient().Get(taskUUID)
+	resp, err := HTTPClient.
+		Request().
+		Method(http.MethodPost).
+		Path("/api/v1/tasks/:task_id").
+		Param("task_id", taskUUID).
+		Do()
 	if err != nil {
 		return nil, err
 	}
 
-	state := new(tasks.TaskState)
-	decoder := json.NewDecoder(bytes.NewReader(item.Value))
+	var taskState *tasks.TaskState
+	decoder := json.NewDecoder(bytes.NewReader(resp.Bytes()))
 	decoder.UseNumber()
-	if err := decoder.Decode(state); err != nil {
+	if err := decoder.Decode(taskState); err != nil {
 		return nil, err
 	}
 
-	return state, nil
+	return taskState, nil
 }
 
 // PurgeState deletes stored task state
 func (b *Backend) PurgeState(taskUUID string) error {
-	return b.getClient().Delete(taskUUID)
+	// not implemented
+
+	return nil
 }
 
 // PurgeGroupMeta deletes stored group meta data
 func (b *Backend) PurgeGroupMeta(groupUUID string) error {
-	return b.getClient().Delete(groupUUID)
-}
+	// not implemented
 
-// updateState saves current task state
-func (b *Backend) updateState(taskState *tasks.TaskState) error {
-	encoded, err := json.Marshal(taskState)
-	if err != nil {
-		return err
-	}
-
-	return b.getClient().Set(&gomemcache.Item{
-		Key:        taskState.TaskUUID,
-		Value:      encoded,
-		Expiration: b.getExpirationTimestamp(),
-	})
-}
-
-// lockGroupMeta acquires lock on group meta data
-func (b *Backend) lockGroupMeta(groupMeta *tasks.GroupMeta) error {
-	groupMeta.Lock = true
-	encoded, err := json.Marshal(groupMeta)
-	if err != nil {
-		return err
-	}
-
-	return b.getClient().Set(&gomemcache.Item{
-		Key:        groupMeta.GroupUUID,
-		Value:      encoded,
-		Expiration: b.getExpirationTimestamp(),
-	})
-}
-
-// unlockGroupMeta releases lock on group meta data
-func (b *Backend) unlockGroupMeta(groupMeta *tasks.GroupMeta) error {
-	groupMeta.Lock = false
-	encoded, err := json.Marshal(groupMeta)
-	if err != nil {
-		return err
-	}
-
-	return b.getClient().Set(&gomemcache.Item{
-		Key:        groupMeta.GroupUUID,
-		Value:      encoded,
-		Expiration: b.getExpirationTimestamp(),
-	})
+	return nil
 }
 
 // getGroupMeta retrieves group meta data, convenience function to avoid repetition
 func (b *Backend) getGroupMeta(groupUUID string) (*tasks.GroupMeta, error) {
-	item, err := b.getClient().Get(groupUUID)
+	resp, err := HTTPClient.
+		Request().
+		Method(http.MethodGet).
+		Path("api/v1/groups/:group_id").
+		Param("group_id", groupUUID).
+		Do()
 	if err != nil {
 		return nil, err
 	}
 
 	groupMeta := new(tasks.GroupMeta)
-	decoder := json.NewDecoder(bytes.NewReader(item.Value))
+	decoder := json.NewDecoder(bytes.NewReader(resp.Bytes()))
 	decoder.UseNumber()
 	if err := decoder.Decode(groupMeta); err != nil {
 		return nil, err
@@ -252,41 +194,54 @@ func (b *Backend) getGroupMeta(groupUUID string) (*tasks.GroupMeta, error) {
 
 // getStates returns multiple task states
 func (b *Backend) getStates(taskUUIDs ...string) ([]*tasks.TaskState, error) {
-	states := make([]*tasks.TaskState, len(taskUUIDs))
+	data := &map[string][]string{"task_uuids": taskUUIDs}
 
-	for i, taskUUID := range taskUUIDs {
-		item, err := b.getClient().Get(taskUUID)
-		if err != nil {
-			return nil, err
-		}
-
-		state := new(tasks.TaskState)
-		decoder := json.NewDecoder(bytes.NewReader(item.Value))
-		decoder.UseNumber()
-		if err := decoder.Decode(state); err != nil {
-			return nil, err
-		}
-
-		states[i] = state
+	resp, err := HTTPClient.
+		Request().
+		Method(http.MethodPost).
+		Path("/api/v1/tasks").
+		JSON(data).
+		Do()
+	if err != nil {
+		return nil, err
 	}
 
-	return states, nil
+	var taskStates []*tasks.TaskState
+	decoder := json.NewDecoder(bytes.NewReader(resp.Bytes()))
+	decoder.UseNumber()
+	if err := decoder.Decode(taskStates); err != nil {
+		return nil, err
+	}
+
+	return taskStates, nil
 }
 
-// getExpirationTimestamp returns expiration timestamp
-func (b *Backend) getExpirationTimestamp() int32 {
-	expiresIn := b.GetConfig().ResultsExpireIn
-	if expiresIn == 0 {
-		// // expire results after 1 hour by default
-		expiresIn = 3600
+// updateState saves current task state
+func (b *Backend) updateState(taskState *tasks.TaskState) error {
+	_, err := HTTPClient.
+		Request().
+		Method(http.MethodPatch).
+		Path("api/v1/tasks/:task_id").
+		Param("task_id", taskState.TaskUUID).
+		Do()
+	if err != nil {
+		return err
 	}
-	return int32(time.Now().Unix() + int64(expiresIn))
+
+	return nil
 }
 
-// getClient returns or creates instance of Memcache client
-func (b *Backend) getClient() *gomemcache.Client {
-	if b.client == nil {
-		b.client = gomemcache.New(b.servers...)
+// setExpirationTime sets expiration timestamp on a stored task state
+func (b *Backend) setExpirationTime(key string) error {
+	// not implemented
+
+	return nil
+}
+
+// client returns or creates instance of HTTP client
+func (b *Backend) client() *gentleman.Client {
+	if HTTPClient == nil {
+		HTTPClient = gentleman.New().BaseURL(b.host)
 	}
-	return b.client
+	return HTTPClient
 }

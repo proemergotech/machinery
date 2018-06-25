@@ -8,11 +8,11 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/RichardKnop/machinery/v1/backends/amqp"
-	"github.com/RichardKnop/machinery/v1/log"
-	"github.com/RichardKnop/machinery/v1/retry"
-	"github.com/RichardKnop/machinery/v1/tasks"
-	"github.com/RichardKnop/machinery/v1/tracing"
+	"github.com/proemergotech/machinery/v1/backends/amqp"
+	"github.com/proemergotech/machinery/v1/log"
+	"github.com/proemergotech/machinery/v1/retry"
+	"github.com/proemergotech/machinery/v1/tasks"
+	"github.com/proemergotech/machinery/v1/tracing"
 	"github.com/opentracing/opentracing-go"
 )
 

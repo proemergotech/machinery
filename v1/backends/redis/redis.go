@@ -6,13 +6,13 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/RichardKnop/machinery/v1/backends/iface"
-	"github.com/RichardKnop/machinery/v1/common"
-	"github.com/RichardKnop/machinery/v1/config"
-	"github.com/RichardKnop/machinery/v1/log"
-	"github.com/RichardKnop/machinery/v1/tasks"
-	"github.com/RichardKnop/redsync"
+	"github.com/proemergotech/machinery/v1/common"
+	"github.com/proemergotech/machinery/v1/backends/iface"
 	"github.com/gomodule/redigo/redis"
+	"github.com/RichardKnop/redsync"
+	"github.com/proemergotech/machinery/v1/tasks"
+	"github.com/proemergotech/machinery/v1/config"
+	"github.com/proemergotech/machinery/v1/log"
 )
 
 // Backend represents a Redis result backend

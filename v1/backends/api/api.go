@@ -22,10 +22,10 @@ type Backend struct {
 var HTTPClient *gentleman.Client
 
 // New creates Backend instance
-func New(cnf *config.Config, host string) iface.Backend {
+func New(cnf *config.Config) iface.Backend {
 	return &Backend{
 		Backend: common.NewBackend(cnf),
-		host:    host,
+		host:    cnf.ResultBackend,
 	}
 }
 

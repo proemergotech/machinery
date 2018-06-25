@@ -22,6 +22,7 @@ import (
 	memcachebackend "github.com/proemergotech/machinery/v1/backends/memcache"
 	mongobackend "github.com/proemergotech/machinery/v1/backends/mongo"
 	redisbackend "github.com/proemergotech/machinery/v1/backends/redis"
+	"github.com/proemergotech/machinery/v1/backends/api"
 )
 
 // BrokerFactory creates a new object of iface.Broker
@@ -39,7 +40,7 @@ func BrokerFactory(cnf *config.Config) (brokeriface.Broker, error) {
 		parts := strings.Split(cnf.Broker, "redis://")
 		if len(parts) != 2 {
 			return nil, fmt.Errorf(
-				"Redis broker connection string should be in format redis://host:port, instead got %s",
+				"redis broker connection string should be in format redis://host:port, instead got %s",
 				cnf.Broker,
 			)
 		}
@@ -68,7 +69,7 @@ func BrokerFactory(cnf *config.Config) (brokeriface.Broker, error) {
 		return sqsbroker.New(cnf), nil
 	}
 
-	return nil, fmt.Errorf("Factory failed with broker URL: %v", cnf.Broker)
+	return nil, fmt.Errorf("factory failed with broker URL: %v", cnf.Broker)
 }
 
 // BackendFactory creates a new object of backends.Interface
@@ -86,7 +87,7 @@ func BackendFactory(cnf *config.Config) (backendiface.Backend, error) {
 		parts := strings.Split(cnf.ResultBackend, "memcache://")
 		if len(parts) != 2 {
 			return nil, fmt.Errorf(
-				"Memcache result backend connection string should be in format memcache://server1:port,server2:port, instead got %s",
+				"memcache result backend connection string should be in format memcache://server1:port,server2:port, instead got %s",
 				cnf.ResultBackend,
 			)
 		}
@@ -124,7 +125,11 @@ func BackendFactory(cnf *config.Config) (backendiface.Backend, error) {
 		return dynamobackend.New(cnf), nil
 	}
 
-	return nil, fmt.Errorf("Factory failed with result backend: %v", cnf.ResultBackend)
+	if strings.HasPrefix(cnf.ResultBackend, "http") {
+		return api.New(cnf), nil
+	}
+
+	return nil, fmt.Errorf("factory failed with result backend: %v", cnf.ResultBackend)
 }
 
 // ParseRedisURL ...
@@ -137,7 +142,7 @@ func ParseRedisURL(url string) (host, password string, db int, err error) {
 		return
 	}
 	if u.Scheme != "redis" {
-		err = errors.New("No redis scheme found")
+		err = errors.New("no redis scheme found")
 		return
 	}
 
@@ -171,14 +176,14 @@ func ParseRedisURL(url string) (host, password string, db int, err error) {
 func ParseRedisSocketURL(url string) (path, password string, db int, err error) {
 	parts := strings.Split(url, "redis+socket://")
 	if parts[0] != "" {
-		err = errors.New("No redis scheme found")
+		err = errors.New("no redis scheme found")
 		return
 	}
 
 	// redis+socket://password@/path/to/file.soc:/db
 
 	if len(parts) != 2 {
-		err = fmt.Errorf("Redis socket connection string should be in format redis+socket://password@/path/to/file.sock:/db, instead got %s", url)
+		err = fmt.Errorf("redis socket connection string should be in format redis+socket://password@/path/to/file.sock:/db, instead got %s", url)
 		return
 	}
 
@@ -197,7 +202,7 @@ func ParseRedisSocketURL(url string) (path, password string, db int, err error) 
 	parts = strings.SplitN(remainder, ":", 2)
 	path = parts[0]
 	if path == "" {
-		err = fmt.Errorf("Redis socket connection string should be in format redis+socket://password@/path/to/file.sock:/db, instead got %s", url)
+		err = fmt.Errorf("redis socket connection string should be in format redis+socket://password@/path/to/file.sock:/db, instead got %s", url)
 		return
 	}
 	if len(parts) == 2 {

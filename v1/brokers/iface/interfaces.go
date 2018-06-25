@@ -1,8 +1,8 @@
 package iface
 
 import (
-	"github.com/RichardKnop/machinery/v1/config"
-	"github.com/RichardKnop/machinery/v1/tasks"
+	"github.com/proemergotech/machinery/v1/config"
+	"github.com/proemergotech/machinery/v1/tasks"
 )
 
 // Broker - a common interface for all brokers

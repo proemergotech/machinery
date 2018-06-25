@@ -12,14 +12,14 @@ import (
 
 	uuid "github.com/satori/go.uuid"
 
-	"github.com/RichardKnop/machinery/v1"
-	"github.com/RichardKnop/machinery/v1/config"
-	"github.com/RichardKnop/machinery/v1/log"
-	"github.com/RichardKnop/machinery/v1/tasks"
+	"github.com/proemergotech/machinery/v1"
+	"github.com/proemergotech/machinery/v1/config"
+	"github.com/proemergotech/machinery/v1/log"
+	"github.com/proemergotech/machinery/v1/tasks"
 	"github.com/urfave/cli"
 
-	exampletasks "github.com/RichardKnop/machinery/example/tasks"
-	tracers "github.com/RichardKnop/machinery/example/tracers"
+	exampletasks "github.com/proemergotech/machinery/example/tasks"
+	tracers "github.com/proemergotech/machinery/example/tracers"
 )
 
 var (

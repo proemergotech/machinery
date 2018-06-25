@@ -3,9 +3,9 @@ package dynamodb_test
 import (
 	"testing"
 
-	"github.com/RichardKnop/machinery/v1/backends/dynamodb"
-	"github.com/RichardKnop/machinery/v1/log"
-	"github.com/RichardKnop/machinery/v1/tasks"
+	"github.com/proemergotech/machinery/v1/backends/dynamodb"
+	"github.com/proemergotech/machinery/v1/log"
+	"github.com/proemergotech/machinery/v1/tasks"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/stretchr/testify/assert"
 

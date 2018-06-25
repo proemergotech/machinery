@@ -5,11 +5,11 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/RichardKnop/machinery/v1"
-	"github.com/RichardKnop/machinery/v1/brokers/iface"
-	"github.com/RichardKnop/machinery/v1/brokers/sqs"
-	"github.com/RichardKnop/machinery/v1/config"
-	"github.com/RichardKnop/machinery/v1/retry"
+	"github.com/proemergotech/machinery/v1"
+	"github.com/proemergotech/machinery/v1/brokers/iface"
+	"github.com/proemergotech/machinery/v1/brokers/sqs"
+	"github.com/proemergotech/machinery/v1/config"
+	"github.com/proemergotech/machinery/v1/retry"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/stretchr/testify/assert"
 

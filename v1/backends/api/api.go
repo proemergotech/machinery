@@ -103,8 +103,18 @@ func (b *Backend) TriggerChord(groupUUID string) (bool, error) {
 
 // SetStatePending updates task state to PENDING
 func (b *Backend) SetStatePending(signature *tasks.Signature) error {
-	taskState := tasks.NewPendingTaskState(signature)
-	return b.updateState(taskState)
+	_, err := HTTPClient.
+		Request().
+		Method(http.MethodPost).
+		Path("/api/v1/groups/:group_id/tasks/:task_id").
+		Param("group_id", signature.GroupUUID).
+		Param("task_id", signature.UUID).
+		Do()
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // SetStateReceived updates task state to RECEIVED

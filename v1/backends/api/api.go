@@ -114,6 +114,7 @@ func (b *Backend) SetStatePending(signature *tasks.Signature) error {
 		Path("/api/v1/groups/:group_id/tasks/:task_id").
 		Param("group_id", signature.GroupUUID).
 		Param("task_id", signature.UUID).
+		JSON(map[string]string{"task_name":signature.Name}).
 		Do()
 	if err != nil {
 		return err

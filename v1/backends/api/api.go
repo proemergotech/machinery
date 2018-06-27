@@ -11,6 +11,7 @@ import (
 	"github.com/proemergotech/machinery/v1/config"
 	"github.com/proemergotech/machinery/v1/tasks"
 	"gopkg.in/h2non/gentleman.v2"
+	"github.com/pkg/errors"
 )
 
 // Backend represents an API result backend
@@ -87,7 +88,7 @@ func (b *Backend) TriggerChord(groupUUID string) (bool, error) {
 
 	data := &map[string]bool{"chord_triggered": true}
 
-	_, err = HTTPClient.
+	resp, err := HTTPClient.
 		Request().
 		Method(http.MethodPatch).
 		Path("api/v1/groups/:group_id").
@@ -98,12 +99,16 @@ func (b *Backend) TriggerChord(groupUUID string) (bool, error) {
 		return false, err
 	}
 
+	if resp.StatusCode != 200 {
+		return false, errors.Errorf("unexpected response from API: %s", resp.String())
+	}
+
 	return true, nil
 }
 
 // SetStatePending updates task state to PENDING
 func (b *Backend) SetStatePending(signature *tasks.Signature) error {
-	_, err := HTTPClient.
+	resp, err := HTTPClient.
 		Request().
 		Method(http.MethodPost).
 		Path("/api/v1/groups/:group_id/tasks/:task_id").
@@ -112,6 +117,10 @@ func (b *Backend) SetStatePending(signature *tasks.Signature) error {
 		Do()
 	if err != nil {
 		return err
+	}
+
+	if resp.StatusCode != 201 {
+		return errors.Errorf("unexpected response from API: %s", resp.String())
 	}
 
 	return nil
@@ -159,6 +168,10 @@ func (b *Backend) GetState(taskUUID string) (*tasks.TaskState, error) {
 		return nil, err
 	}
 
+	if resp.StatusCode != 200 {
+		return nil, errors.Errorf("unexpected response from API: %s", resp.String())
+	}
+
 	var taskState *tasks.TaskState
 	decoder := json.NewDecoder(bytes.NewReader(resp.Bytes()))
 	decoder.UseNumber()
@@ -195,6 +208,10 @@ func (b *Backend) getGroupMeta(groupUUID string) (*tasks.GroupMeta, error) {
 		return nil, err
 	}
 
+	if resp.StatusCode != 200 {
+		return nil, errors.Errorf("unexpected response from API: %s", resp.String())
+	}
+
 	groupMeta := new(tasks.GroupMeta)
 	decoder := json.NewDecoder(bytes.NewReader(resp.Bytes()))
 	decoder.UseNumber()
@@ -219,6 +236,10 @@ func (b *Backend) getStates(taskUUIDs ...string) ([]*tasks.TaskState, error) {
 		return nil, err
 	}
 
+	if resp.StatusCode != 200 {
+		return nil, errors.Errorf("unexpected response from API: %s", resp.String())
+	}
+
 	var taskStates []*tasks.TaskState
 	decoder := json.NewDecoder(bytes.NewReader(resp.Bytes()))
 	decoder.UseNumber()
@@ -231,7 +252,7 @@ func (b *Backend) getStates(taskUUIDs ...string) ([]*tasks.TaskState, error) {
 
 // updateState saves current task state
 func (b *Backend) updateState(taskState *tasks.TaskState) error {
-	_, err := HTTPClient.
+	resp, err := HTTPClient.
 		Request().
 		Method(http.MethodPatch).
 		Path("api/v1/tasks/:task_id").
@@ -239,6 +260,10 @@ func (b *Backend) updateState(taskState *tasks.TaskState) error {
 		Do()
 	if err != nil {
 		return err
+	}
+
+	if resp.StatusCode != 200 {
+		return errors.Errorf("unexpected response from API: %s", resp.String())
 	}
 
 	return nil

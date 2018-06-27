@@ -39,14 +39,12 @@ func NewChain(signatures ...*Signature) (*Chain, error) {
 	// Auto generate task UUIDs if needed
 	for _, signature := range signatures {
 		if signature.UUID == "" {
-
 			signatureID, err := uuid.NewV4()
-
 			if err != nil {
-				return nil, fmt.Errorf("Error generating signature id: %s", err.Error())
+				return nil, fmt.Errorf("error generating signature id: %s", err.Error())
 			}
 
-			signature.UUID = fmt.Sprintf("task_%v", signatureID)
+			signature.UUID = signatureID.String()
 		}
 	}
 
@@ -75,14 +73,12 @@ func NewGroup(signatures ...*Signature) (*Group, error) {
 	// Auto generate task UUIDs if needed, group tasks by common group UUID
 	for _, signature := range signatures {
 		if signature.UUID == "" {
-
 			signatureID, err := uuid.NewV4()
-
 			if err != nil {
-				return nil, fmt.Errorf("Error generating signature id: %s", err.Error())
+				return nil, fmt.Errorf("error generating signature id: %s", err.Error())
 			}
 
-			signature.UUID = fmt.Sprintf("task_%v", signatureID)
+			signature.UUID = signatureID.String()
 		}
 		signature.GroupUUID = groupID
 		signature.GroupTaskCount = len(signatures)

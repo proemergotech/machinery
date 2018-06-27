@@ -146,28 +146,26 @@ func (server *Server) SendTaskWithContext(ctx context.Context, signature *tasks.
 func (server *Server) SendTask(signature *tasks.Signature) (*result.AsyncResult, error) {
 	// Make sure result backend is defined
 	if server.backend == nil {
-		return nil, errors.New("Result backend required")
+		return nil, errors.New("result backend required")
 	}
 
 	// Auto generate a UUID if not set already
 	if signature.UUID == "" {
-
 		taskID, err := uuid.NewV4()
-
 		if err != nil {
-			return nil, fmt.Errorf("Error generating task id: %s", err.Error())
+			return nil, fmt.Errorf("error generating task id: %s", err.Error())
 		}
 
-		signature.UUID = fmt.Sprintf("task_%v", taskID)
+		signature.UUID = taskID.String()
 	}
 
 	// Set initial task state to PENDING
 	if err := server.backend.SetStatePending(signature); err != nil {
-		return nil, fmt.Errorf("Set state pending error: %s", err)
+		return nil, fmt.Errorf("set state pending error: %s", err)
 	}
 
 	if err := server.broker.Publish(signature); err != nil {
-		return nil, fmt.Errorf("Publish message error: %s", err)
+		return nil, fmt.Errorf("publish message error: %s", err)
 	}
 
 	return result.NewAsyncResult(signature, server.backend), nil

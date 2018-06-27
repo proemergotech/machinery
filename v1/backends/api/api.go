@@ -23,10 +23,13 @@ var HTTPClient *gentleman.Client
 
 // New creates Backend instance
 func New(cnf *config.Config) iface.Backend {
-	return &Backend{
+	backend := &Backend{
 		Backend: common.NewBackend(cnf),
 		host:    cnf.ResultBackend,
 	}
+
+	backend.initClient()
+	return backend
 }
 
 // InitGroup creates and saves a group meta data object
@@ -239,9 +242,8 @@ func (b *Backend) setExpirationTime(key string) error {
 }
 
 // client returns or creates instance of HTTP client
-func (b *Backend) client() *gentleman.Client {
+func (b *Backend) initClient() {
 	if HTTPClient == nil {
 		HTTPClient = gentleman.New().BaseURL(b.host)
 	}
-	return HTTPClient
 }

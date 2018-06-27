@@ -201,7 +201,7 @@ func (b *Backend) getGroupMeta(groupUUID string) (*tasks.GroupMeta, error) {
 	resp, err := HTTPClient.
 		Request().
 		Method(http.MethodGet).
-		Path("api/v1/groups/:group_id").
+		Path("/api/v1/groups/:group_id").
 		Param("group_id", groupUUID).
 		Do()
 	if err != nil {

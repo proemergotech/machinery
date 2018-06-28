@@ -8,8 +8,8 @@ import (
 
 // TaskResult represents an actual return value of a processed task
 type TaskResult struct {
-	Type  string      `bson:"type"`
-	Value interface{} `bson:"value"`
+	Type  string      `bson:"type" json:"type"`
+	Value interface{} `bson:"value" json:"value"`
 }
 
 // ReflectTaskResults ...

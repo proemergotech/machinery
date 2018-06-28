@@ -19,23 +19,23 @@ const (
 
 // TaskState represents a state of a task
 type TaskState struct {
-	TaskUUID  string        `bson:"_id"`
-	TaskName  string        `bson:"task_name"`
-	State     string        `bson:"state"`
-	Results   []*TaskResult `bson:"results"`
-	Error     string        `bson:"error"`
-	CreatedAt time.Time     `bson:"created_at"`
+	TaskUUID  string        `bson:"_id" json:"_id"`
+	TaskName  string        `bson:"task_name" json:"task_name"`
+	State     string        `bson:"state" json:"state"`
+	Results   []*TaskResult `bson:"results" json:"results"`
+	Error     string        `bson:"error" json:"error"`
+	CreatedAt time.Time     `bson:"created_at" json:"created_at"`
 }
 
 // GroupMeta stores useful metadata about tasks within the same group
 // E.g. UUIDs of all tasks which are used in order to check if all tasks
 // completed successfully or not and thus whether to trigger chord callback
 type GroupMeta struct {
-	GroupUUID      string    `bson:"_id"`
-	TaskUUIDs      []string  `bson:"task_uuids"`
-	ChordTriggered bool      `bson:"chord_triggered"`
-	Lock           bool      `bson:"lock"`
-	CreatedAt      time.Time `bson:"created_at"`
+	GroupUUID      string    `bson:"_id" json:"_id"`
+	TaskUUIDs      []string  `bson:"task_uuids" json:"task_uuids"`
+	ChordTriggered bool      `bson:"chord_triggered" json:"chord_triggered"`
+	Lock           bool      `bson:"lock" json:"lock"`
+	CreatedAt      time.Time `bson:"created_at" json:"created_at"`
 }
 
 // NewPendingTaskState ...

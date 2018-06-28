@@ -12,6 +12,7 @@ import (
 	"github.com/proemergotech/machinery/v1/tasks"
 	"gopkg.in/h2non/gentleman.v2"
 	"github.com/pkg/errors"
+	"strings"
 )
 
 // Backend represents an API result backend
@@ -91,7 +92,7 @@ func (b *Backend) TriggerChord(groupUUID string) (bool, error) {
 	resp, err := HTTPClient.
 		Request().
 		Method(http.MethodPatch).
-		Path("api/v1/groups/:group_id").
+		Path("/api/v1/groups/:group_id").
 		Param("group_id", groupUUID).
 		JSON(data).
 		Do()
@@ -121,7 +122,11 @@ func (b *Backend) SetStatePending(signature *tasks.Signature) error {
 	}
 
 	if resp.StatusCode != 201 {
-		return errors.Errorf("unexpected response from API: %s", resp.String())
+		return errors.Errorf("could not create task (%s: %s) with pending state; unexpected response from API: %s",
+			signature.Name,
+			signature.UUID,
+			resp.String(),
+		)
 	}
 
 	return nil
@@ -225,6 +230,10 @@ func (b *Backend) getGroupMeta(groupUUID string) (*tasks.GroupMeta, error) {
 
 // getStates returns multiple task states
 func (b *Backend) getStates(taskUUIDs ...string) ([]*tasks.TaskState, error) {
+	if len(taskUUIDs) == 0 {
+		return nil, errors.Errorf("cannot get task states without at least one task id")
+	}
+
 	data := &map[string][]string{"task_uuids": taskUUIDs}
 
 	resp, err := HTTPClient.
@@ -238,7 +247,10 @@ func (b *Backend) getStates(taskUUIDs ...string) ([]*tasks.TaskState, error) {
 	}
 
 	if resp.StatusCode != 200 {
-		return nil, errors.Errorf("unexpected response from API: %s", resp.String())
+		return nil, errors.Errorf("could not get task states for tasks: %s; unexpected response from API: %s",
+			strings.Join(taskUUIDs, ","),
+			resp.String(),
+		)
 	}
 
 	var taskStates []*tasks.TaskState
@@ -253,18 +265,25 @@ func (b *Backend) getStates(taskUUIDs ...string) ([]*tasks.TaskState, error) {
 
 // updateState saves current task state
 func (b *Backend) updateState(taskState *tasks.TaskState) error {
+	data := &map[string]string{"status": taskState.State}
+
 	resp, err := HTTPClient.
 		Request().
 		Method(http.MethodPatch).
-		Path("api/v1/tasks/:task_id").
+		Path("/api/v1/tasks/:task_id").
 		Param("task_id", taskState.TaskUUID).
+		JSON(data).
 		Do()
 	if err != nil {
 		return err
 	}
 
 	if resp.StatusCode != 200 {
-		return errors.Errorf("unexpected response from API: %s", resp.String())
+		return errors.Errorf("could not update task (%s: %s) state; unexpected response from API: %s",
+			taskState.TaskName,
+			taskState.TaskUUID,
+			resp.String(),
+		)
 	}
 
 	return nil

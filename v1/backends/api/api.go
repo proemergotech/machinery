@@ -254,9 +254,7 @@ func (b *Backend) getStates(taskUUIDs ...string) ([]*tasks.TaskState, error) {
 	}
 
 	var taskStates []*tasks.TaskState
-	decoder := json.NewDecoder(bytes.NewReader(resp.Bytes()))
-	decoder.UseNumber()
-	if err := decoder.Decode(taskStates); err != nil {
+	if err := resp.JSON(&taskStates); err != nil {
 		return nil, err
 	}
 

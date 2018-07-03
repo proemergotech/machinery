@@ -263,7 +263,11 @@ func (b *Backend) getStates(taskUUIDs ...string) ([]*tasks.TaskState, error) {
 
 // updateState saves current task state
 func (b *Backend) updateState(taskState *tasks.TaskState) error {
-	data := &map[string]string{"status": taskState.State}
+	data := map[string]string{"status": taskState.State}
+
+	if taskState.Error != "" {
+		data["error"] = taskState.Error
+	}
 
 	resp, err := HTTPClient.
 		Request().

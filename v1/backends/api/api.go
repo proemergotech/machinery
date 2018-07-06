@@ -234,14 +234,15 @@ func (b *Backend) getStates(taskUUIDs ...string) ([]*tasks.TaskState, error) {
 		return nil, errors.Errorf("cannot get task states without at least one task id")
 	}
 
-	data := &map[string][]string{"task_uuids": taskUUIDs}
-
-	resp, err := HTTPClient.
+	req := HTTPClient.
 		Request().
-		Method(http.MethodPost).
-		Path("/api/v1/tasks").
-		JSON(data).
-		Do()
+		Method(http.MethodGet).
+		Path("/api/v1/tasks")
+	for _, task := range taskUUIDs {
+		req.AddQuery("task_uuid", task)
+	}
+
+	resp, err := req.Do()
 	if err != nil {
 		return nil, err
 	}

@@ -111,6 +111,10 @@ func (b *Backend) TriggerChord(groupUUID string) (bool, error) {
 
 // SetStatePending updates task state to PENDING
 func (b *Backend) SetStatePending(signature *tasks.Signature) error {
+	if signature.Name == "stage_trigger" {
+		return nil
+	}
+
 	resp, err := HTTPClient.
 		Request().
 		Method(http.MethodPost).
@@ -136,30 +140,50 @@ func (b *Backend) SetStatePending(signature *tasks.Signature) error {
 
 // SetStateReceived updates task state to RECEIVED
 func (b *Backend) SetStateReceived(signature *tasks.Signature) error {
+	if signature.Name == "stage_trigger" {
+		return nil
+	}
+
 	taskState := tasks.NewReceivedTaskState(signature)
 	return b.updateState(taskState)
 }
 
 // SetStateStarted updates task state to STARTED
 func (b *Backend) SetStateStarted(signature *tasks.Signature) error {
+	if signature.Name == "stage_trigger" {
+		return nil
+	}
+
 	taskState := tasks.NewStartedTaskState(signature)
 	return b.updateState(taskState)
 }
 
 // SetStateRetry updates task state to RETRY
 func (b *Backend) SetStateRetry(signature *tasks.Signature) error {
+	if signature.Name == "stage_trigger" {
+		return nil
+	}
+
 	state := tasks.NewRetryTaskState(signature)
 	return b.updateState(state)
 }
 
 // SetStateSuccess updates task state to SUCCESS
 func (b *Backend) SetStateSuccess(signature *tasks.Signature, results []*tasks.TaskResult) error {
+	if signature.Name == "stage_trigger" {
+		return nil
+	}
+
 	taskState := tasks.NewSuccessTaskState(signature, results)
 	return b.updateState(taskState)
 }
 
 // SetStateFailure updates task state to FAILURE
 func (b *Backend) SetStateFailure(signature *tasks.Signature, err string) error {
+	if signature.Name == "stage_trigger" {
+		return nil
+	}
+
 	taskState := tasks.NewFailureTaskState(signature, err)
 	return b.updateState(taskState)
 }

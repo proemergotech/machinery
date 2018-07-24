@@ -6,13 +6,18 @@ import (
 
 	"net/http"
 
+	"strings"
+
+	"github.com/pkg/errors"
 	"github.com/proemergotech/machinery/v1/backends/iface"
 	"github.com/proemergotech/machinery/v1/common"
 	"github.com/proemergotech/machinery/v1/config"
 	"github.com/proemergotech/machinery/v1/tasks"
 	"gopkg.in/h2non/gentleman.v2"
-	"github.com/pkg/errors"
-	"strings"
+)
+
+const (
+	stageTrigger = "stage_trigger"
 )
 
 // Backend represents an API result backend
@@ -77,22 +82,12 @@ func (b *Backend) GroupTaskStates(groupUUID string, groupTaskCount int) ([]*task
 // whether the worker should trigger chord (true) or no if it has been triggered
 // already (false)
 func (b *Backend) TriggerChord(groupUUID string) (bool, error) {
-	groupMeta, err := b.getGroupMeta(groupUUID)
-	if err != nil {
-		return false, err
-	}
-
-	// Chord has already been triggered, return false (should not trigger again)
-	if groupMeta.ChordTriggered {
-		return false, nil
-	}
-
 	data := &map[string]bool{"chord_triggered": true}
 
 	resp, err := HTTPClient.
 		Request().
 		Method(http.MethodPatch).
-		Path("/api/v1/groups/:group_id").
+		Path("/api/v1/groups/:group_id/chord-triggered").
 		Param("group_id", groupUUID).
 		JSON(data).
 		Do()
@@ -104,18 +99,33 @@ func (b *Backend) TriggerChord(groupUUID string) (bool, error) {
 		return false, errors.Errorf("unexpected response from API: %s", resp.String())
 	}
 
-	return true, nil
+	type body struct {
+		Updated bool `json:"updated"`
+	}
+
+	var d body
+	err = resp.JSON(&d)
+	if err != nil {
+		return false, errors.Wrap(err, "unable to decode response body")
+	}
+
+	// if the value was actually updated, then we know that's the first time, so trigger the chord
+	return d.Updated, nil
 }
 
 // SetStatePending updates task state to PENDING
 func (b *Backend) SetStatePending(signature *tasks.Signature) error {
+	if signature.Name == stageTrigger {
+		return nil
+	}
+
 	resp, err := HTTPClient.
 		Request().
 		Method(http.MethodPost).
 		Path("/api/v1/groups/:group_id/tasks/:task_id").
 		Param("group_id", signature.GroupUUID).
 		Param("task_id", signature.UUID).
-		JSON(map[string]string{"task_name":signature.Name}).
+		JSON(map[string]string{"task_name": signature.Name}).
 		Do()
 	if err != nil {
 		return err
@@ -134,30 +144,50 @@ func (b *Backend) SetStatePending(signature *tasks.Signature) error {
 
 // SetStateReceived updates task state to RECEIVED
 func (b *Backend) SetStateReceived(signature *tasks.Signature) error {
+	if signature.Name == stageTrigger {
+		return nil
+	}
+
 	taskState := tasks.NewReceivedTaskState(signature)
 	return b.updateState(taskState)
 }
 
 // SetStateStarted updates task state to STARTED
 func (b *Backend) SetStateStarted(signature *tasks.Signature) error {
+	if signature.Name == stageTrigger {
+		return nil
+	}
+
 	taskState := tasks.NewStartedTaskState(signature)
 	return b.updateState(taskState)
 }
 
 // SetStateRetry updates task state to RETRY
 func (b *Backend) SetStateRetry(signature *tasks.Signature) error {
+	if signature.Name == stageTrigger {
+		return nil
+	}
+
 	state := tasks.NewRetryTaskState(signature)
 	return b.updateState(state)
 }
 
 // SetStateSuccess updates task state to SUCCESS
 func (b *Backend) SetStateSuccess(signature *tasks.Signature, results []*tasks.TaskResult) error {
+	if signature.Name == stageTrigger {
+		return nil
+	}
+
 	taskState := tasks.NewSuccessTaskState(signature, results)
 	return b.updateState(taskState)
 }
 
 // SetStateFailure updates task state to FAILURE
 func (b *Backend) SetStateFailure(signature *tasks.Signature, err string) error {
+	if signature.Name == stageTrigger {
+		return nil
+	}
+
 	taskState := tasks.NewFailureTaskState(signature, err)
 	return b.updateState(taskState)
 }

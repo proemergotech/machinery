@@ -2,25 +2,6 @@
 
 
 [[projects]]
-  name = "github.com/Masterminds/glide"
-  packages = [
-    "cfg",
-    "godep/strip",
-    "mirrors",
-    "msg",
-    "path",
-    "util"
-  ]
-  revision = "67790b3dbede72cfdc54aa53be4706322c9499e0"
-  version = "v0.13.1"
-
-[[projects]]
-  name = "github.com/Masterminds/vcs"
-  packages = ["."]
-  revision = "6f1c6d150500e452704e9863f68c2559f58616bf"
-  version = "v1.12.0"
-
-[[projects]]
   branch = "master"
   name = "github.com/RichardKnop/logging"
   packages = ["."]
@@ -111,12 +92,6 @@
   version = "v1.3.0"
 
 [[projects]]
-  branch = "master"
-  name = "github.com/mitchellh/go-homedir"
-  packages = ["."]
-  revision = "3864e76763d94a6df2f9960b16a20a33da9f9a66"
-
-[[projects]]
   name = "github.com/opentracing/opentracing-go"
   packages = [
     ".",
@@ -165,24 +140,6 @@
   packages = ["."]
   revision = "cfb38830724cc34fedffe9a2a29fb54fa9169cd1"
   version = "v1.20.0"
-
-[[projects]]
-  name = "gitlab.com/proemergotech/log-go"
-  packages = [
-    ".",
-    "gentlemanlog"
-  ]
-  revision = "f588312ec6b7a92c2a55ed494e546082f1d7e070"
-  version = "0.1.6"
-
-[[projects]]
-  name = "gitlab.com/proemergotech/trace-go"
-  packages = [
-    ".",
-    "gentlemantrace"
-  ]
-  revision = "ad0b58453f5ec472a01aedc4b7781c8317291a19"
-  version = "0.1.7"
 
 [[projects]]
   branch = "master"
@@ -256,6 +213,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "e4bffcb4f5b7e1a9c0de61928197f300db2a29a508b449869052ffd2cf983521"
+  inputs-digest = "54ba915f201176068f410ab4615e1978a4d29506907f6c80b8fc8f151bf956a9"
   solver-name = "gps-cdcl"
   solver-version = 1

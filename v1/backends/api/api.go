@@ -16,6 +16,10 @@ import (
 	"gopkg.in/h2non/gentleman.v2"
 )
 
+const (
+	stageTrigger = "stage_trigger"
+)
+
 // Backend represents an API result backend
 type Backend struct {
 	common.Backend
@@ -111,7 +115,7 @@ func (b *Backend) TriggerChord(groupUUID string) (bool, error) {
 
 // SetStatePending updates task state to PENDING
 func (b *Backend) SetStatePending(signature *tasks.Signature) error {
-	if signature.Name == "stage_trigger" {
+	if signature.Name == stageTrigger {
 		return nil
 	}
 
@@ -140,7 +144,7 @@ func (b *Backend) SetStatePending(signature *tasks.Signature) error {
 
 // SetStateReceived updates task state to RECEIVED
 func (b *Backend) SetStateReceived(signature *tasks.Signature) error {
-	if signature.Name == "stage_trigger" {
+	if signature.Name == stageTrigger {
 		return nil
 	}
 
@@ -150,7 +154,7 @@ func (b *Backend) SetStateReceived(signature *tasks.Signature) error {
 
 // SetStateStarted updates task state to STARTED
 func (b *Backend) SetStateStarted(signature *tasks.Signature) error {
-	if signature.Name == "stage_trigger" {
+	if signature.Name == stageTrigger {
 		return nil
 	}
 
@@ -160,7 +164,7 @@ func (b *Backend) SetStateStarted(signature *tasks.Signature) error {
 
 // SetStateRetry updates task state to RETRY
 func (b *Backend) SetStateRetry(signature *tasks.Signature) error {
-	if signature.Name == "stage_trigger" {
+	if signature.Name == stageTrigger {
 		return nil
 	}
 
@@ -170,7 +174,7 @@ func (b *Backend) SetStateRetry(signature *tasks.Signature) error {
 
 // SetStateSuccess updates task state to SUCCESS
 func (b *Backend) SetStateSuccess(signature *tasks.Signature, results []*tasks.TaskResult) error {
-	if signature.Name == "stage_trigger" {
+	if signature.Name == stageTrigger {
 		return nil
 	}
 
@@ -180,7 +184,7 @@ func (b *Backend) SetStateSuccess(signature *tasks.Signature, results []*tasks.T
 
 // SetStateFailure updates task state to FAILURE
 func (b *Backend) SetStateFailure(signature *tasks.Signature, err string) error {
-	if signature.Name == "stage_trigger" {
+	if signature.Name == stageTrigger {
 		return nil
 	}
 
